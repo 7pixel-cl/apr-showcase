@@ -3,164 +3,229 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>APR — Case study · Marco Alvarado</title>
+<title>APR: case study by Marco Alvarado</title>
 <meta name="description" content="A multi-tenant SaaS that runs the monthly billing cycle for Chile's rural drinking-water committees — from offline meter readings in the field to legally compliant bills.">
+<meta name="author" content="Marco Alvarado">
 <meta property="og:type" content="article">
-<meta property="og:title" content="APR — Billing platform for rural water utilities">
+<meta property="og:title" content="APR: Billing platform for rural water utilities">
 <meta property="og:description" content="A multi-tenant SaaS that runs the monthly billing cycle for Chile's rural drinking-water committees — from offline meter readings in the field to legally compliant bills.">
 <meta property="og:url" content="https://7pixel-cl.github.io/apr-showcase/">
 <meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121211" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23111'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='700' font-size='15' fill='%23fff' text-anchor='middle'%3EMA%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#fbfaf7; --surface:#ffffff; --ink:#16181d; --ink-2:#4a505c; --ink-3:#7f8593;
-  --rule:#e7e4dd; --chip:#f2f0ea; --accent:#0f6e8c; --accent-ink:#0f6e8c;
-  --accent-soft:color-mix(in oklab, #0f6e8c 9%, transparent);
-  --shadow:0 1px 2px rgba(20,20,20,.04),0 8px 24px -12px rgba(20,20,20,.12);
-  --serif:"Instrument Serif",Georgia,serif; --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace; color-scheme:light;
+  --paper:#f6f5f1; --paper-2:#efede7; --ink:#121211; --ink-2:#3f3e3a; --ink-3:#77746d; --rule:#d9d6cd; --rule-2:#e6e3db;
+  --accent:#0f6e8c;
+  --grot:"Schibsted Grotesk",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --text:"Newsreader",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --gut:clamp(16px,4vw,48px);
+  color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f1114; --surface:#161a1f; --ink:#eceae5; --ink-2:#b4b8c0; --ink-3:#7d838e;
-  --rule:#262b32; --chip:#1d2228; --accent-ink:#6cc7e3; --accent-soft:color-mix(in oklab, #6cc7e3 12%, transparent);
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.5); color-scheme:dark}}
+  --paper:#121211; --paper-2:#1a1a18; --ink:#ecebe6; --ink-2:#bdbbb4; --ink-3:#86847d; --rule:#2e2d2a; --rule-2:#252422; --accent:#6cc7e3; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f1114; --surface:#161a1f; --ink:#eceae5; --ink-2:#b4b8c0; --ink-3:#7d838e;
-  --rule:#262b32; --chip:#1d2228; --accent-ink:#6cc7e3; --accent-soft:color-mix(in oklab, #6cc7e3 12%, transparent);
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.5); color-scheme:dark}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;scroll-padding-top:24px}
-body{background:var(--bg);color:var(--ink);font:400 17px/1.7 var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-a{color:var(--accent-ink);text-decoration-thickness:1px;text-underline-offset:3px}
-a:hover{text-decoration-thickness:2px}
-:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px;border-radius:4px}
-.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
-/* top bar */
-.bar{display:flex;justify-content:space-between;align-items:center;padding:22px 0;font-size:14px;color:var(--ink-3)}
-.bar a{color:var(--ink-2);text-decoration:none}.bar a:hover{color:var(--ink)}
-.bar .me{font-weight:600;color:var(--ink)}
-.bar nav{display:flex;gap:18px}
-/* hero */
-.hero{padding:56px 0 40px;max-width:820px}
-.kicker{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--accent-ink);letter-spacing:.02em}
-.kicker::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent-ink)}
-h1{font:400 clamp(40px,6.4vw,68px)/1.02 var(--serif);letter-spacing:-.015em;margin:18px 0 22px;text-wrap:balance}
-.summary{font-size:clamp(18px,2.2vw,21px);line-height:1.55;color:var(--ink-2);max-width:700px;text-wrap:pretty}
-.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;font-size:15px;font-weight:500;text-decoration:none;border:1px solid var(--rule);color:var(--ink);background:var(--surface);transition:border-color .15s,transform .15s}
-.btn:hover{border-color:var(--ink-3);transform:translateY(-1px)}
-.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.btn svg{width:14px;height:14px}
-.note{margin-top:28px;padding:14px 18px;border-left:3px solid var(--accent-ink);background:var(--accent-soft);border-radius:0 10px 10px 0;font-size:15px;color:var(--ink-2);max-width:720px}
-.shot{margin:8px 0 0;border-radius:14px;overflow:hidden;border:1px solid var(--rule);box-shadow:var(--shadow);background:var(--surface)}
-.shot img{display:block;width:100%;height:auto}
-.shotcap{font-size:13.5px;color:var(--ink-3);margin-top:10px}
-/* layout */
-.layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:64px;padding:64px 0 40px;border-top:1px solid var(--rule);margin-top:56px}
-.toc{position:sticky;top:28px;align-self:start;font-size:14px}
-.toc p{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px}
-.toc a{display:block;padding:5px 0 5px 12px;border-left:2px solid var(--rule);color:var(--ink-3);text-decoration:none;line-height:1.35}
-.toc a:hover{color:var(--ink)}
-.toc a.on{color:var(--ink);border-color:var(--accent-ink)}
-article{max-width:720px}
-.sec{margin-bottom:72px}
-.sec h2{font:400 clamp(30px,3.6vw,38px)/1.15 var(--serif);letter-spacing:-.01em;margin-bottom:20px}
-.sec p{margin-bottom:16px;color:var(--ink-2)}
-.sec p strong,.sec li strong{color:var(--ink);font-weight:600}
-.sec ul,.sec ol{margin:0 0 18px 0;padding-left:20px;color:var(--ink-2)}
-.sec li{margin-bottom:10px;padding-left:4px}
-.sec li::marker{color:var(--ink-3)}
-code{font:500 .86em var(--mono);background:var(--chip);border:1px solid var(--rule);border-radius:5px;padding:1px 6px;color:var(--ink)}
-/* glance */
-.glance{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:14px;overflow:hidden}
-.glance div{background:var(--surface);padding:18px 20px}
-.glance dt{font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
-.glance dd{font-size:15.5px;line-height:1.5;color:var(--ink)}
-/* cards */
-.cards{list-style:none;padding:0!important;display:grid;gap:14px}
-.sec .card{position:relative;background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:24px 24px 10px 70px;margin:0!important}
-.card .num{position:absolute;left:24px;top:26px;font:500 13px var(--mono);color:var(--accent-ink)}
-.card h3{font-size:18px;font-weight:600;line-height:1.35;margin-bottom:10px;color:var(--ink)}
-.card p,.card li{font-size:16px}
+  --paper:#121211; --paper-2:#1a1a18; --ink:#ecebe6; --ink-2:#bdbbb4; --ink-3:#86847d; --rule:#2e2d2a; --rule-2:#252422; --accent:#6cc7e3; color-scheme:dark}
+
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:32px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{background:var(--paper);color:var(--ink);font:400 19px/1.62 var(--text);font-optical-sizing:auto;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-kerning:normal}
+img,svg{display:block;max-width:100%}
+a{color:inherit;text-decoration-line:underline;text-decoration-thickness:1px;text-underline-offset:.2em;text-decoration-color:var(--rule)}
+a:hover{text-decoration-color:currentColor}
+::selection{background:var(--accent);color:var(--paper)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.ar{width:.62em;height:.62em;display:inline-block;margin-left:.2em;vertical-align:.05em}
+
+.page{max-width:1280px;margin:0 auto;padding:0 var(--gut)}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px}
+
+/* masthead */
+.mast{display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:22px 0 18px;border-bottom:1px solid var(--ink);font:500 14px/1 var(--grot)}
+.mast .who{text-decoration:none;font-weight:600;letter-spacing:-.01em}
+.mast .who span{color:var(--ink-3);font-weight:400}
+.mast nav{display:flex;gap:22px;align-items:baseline}
+.mast nav a{text-decoration:none;color:var(--ink-2)}
+.mast nav a:hover{color:var(--ink)}
+.mode{font:inherit;color:var(--ink-2);background:none;border:0;cursor:pointer;padding:0}
+.mode:hover{color:var(--ink)}
+
+/* title block */
+.tb{padding:clamp(40px,7vw,88px) 0 0}
+.tb-meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 28px;font:400 12.5px/1.4 var(--mono);color:var(--ink-3);letter-spacing:.01em}
+.tb-meta b{font-weight:500;color:var(--ink)}
+.name{grid-column:1/-1;font:700 clamp(64px,13.5vw,184px)/.86 var(--grot);letter-spacing:-.055em;margin:clamp(18px,3vw,28px) 0 clamp(28px,4vw,48px) -.04em;text-wrap:balance}
+.lede{grid-column:1/8}
+.thesis{font:400 clamp(26px,3.1vw,38px)/1.18 var(--text);letter-spacing:-.012em;text-wrap:balance;margin-bottom:20px}
+.summary{color:var(--ink-2);max-width:36em;text-wrap:pretty}
+.go{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:26px;font:500 16px/1.3 var(--grot)}
+.go a{text-decoration-color:var(--ink-3)}
+.go a:first-child{color:var(--accent);text-decoration-color:currentColor}
+.nda{margin-top:28px;padding-left:16px;border-left:2px solid var(--accent);font-size:16.5px;line-height:1.55;color:var(--ink-2);max-width:36em}
+.sheet{grid-column:9/-1;align-self:start;border-top:1px solid var(--ink);font:400 14.5px/1.45 var(--grot)}
+.sheet div{display:grid;grid-template-columns:96px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule)}
+.sheet dt{color:var(--ink-3)}
+.sheet dd{color:var(--ink)}
+
+/* figures */
+.figs{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:clamp(48px,7vw,88px);border-top:1px solid var(--ink);border-bottom:1px solid var(--rule)}
+.figs div{padding:20px 20px 22px 0}
+.figs div+div{padding-left:20px;border-left:1px solid var(--rule)}
+.figs strong{display:block;font:600 clamp(34px,4.4vw,56px)/1 var(--grot);letter-spacing:-.04em;font-variant-numeric:tabular-nums lining-nums}
+.figs span{display:block;margin-top:10px;font:400 12.5px/1.4 var(--mono);color:var(--ink-3);max-width:18ch}
+
+/* screenshot */
+.shot{grid-column:1/-1;margin-top:clamp(40px,6vw,72px)}
+.shot .frame{background:var(--paper-2);border:1px solid var(--rule);padding:clamp(8px,1.4vw,18px)}
+.shot img{width:100%;height:auto;border:1px solid var(--rule-2)}
+figcaption{font:400 12.5px/1.5 var(--mono);color:var(--ink-3);margin-top:12px;display:flex;gap:14px}
+figcaption span{color:var(--ink);flex:none}
+
+/* body sections */
+.body{margin-top:clamp(64px,9vw,120px)}
+.sec{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px;padding:28px 0 clamp(56px,7vw,88px);border-top:1px solid var(--ink)}
+.sec-h{grid-column:1/4;align-self:start;position:sticky;top:28px}
+.sec-n{display:block;font:500 12.5px/1 var(--mono);color:var(--accent);margin-bottom:10px}
+.sec-h h2{font:600 22px/1.15 var(--grot);letter-spacing:-.02em;text-wrap:balance;max-width:12ch}
+.sec-b{grid-column:4/11;max-width:680px}
+.sec-b>p{margin-bottom:1em;text-wrap:pretty}
+.sec-b>p:first-child{font-size:21px;line-height:1.55;color:var(--ink)}
+.sec-b p{color:var(--ink-2)}
+.sec-b>p:first-child,.sec-b strong{color:var(--ink)}
+.sec-b strong{font-weight:500}
+.sec-b em{font-style:italic}
+.sec-b ol:not(.points),.sec-b ul:not(.stack){list-style:none;margin:0 0 1.2em;border-top:1px solid var(--rule)}
+.sec-b ol:not(.points)>li,.sec-b ul:not(.stack)>li{position:relative;padding:12px 0 12px 28px;border-bottom:1px solid var(--rule);color:var(--ink-2)}
+.sec-b ul:not(.stack)>li::before{content:"";position:absolute;left:2px;top:1.32em;width:12px;height:1px;background:var(--ink-3)}
+.sec-b ol:not(.points){counter-reset:n}
+.sec-b ol:not(.points)>li{counter-increment:n}
+.sec-b ol:not(.points)>li::before{content:counter(n);position:absolute;left:0;top:15px;font:500 12.5px/1.4 var(--mono);color:var(--ink-3)}
+.sec-b li>ul{margin:8px 0 0!important}
+.sec-b li>ul>li{padding:6px 0 6px 22px!important;border-bottom:0!important}
+.sec-b li>ul{border-top:0!important}
+.sec-b li>strong:first-child{font:600 17px/1.4 var(--grot);letter-spacing:-.01em;margin-right:.15em}
+code{font:400 .8em/1 var(--mono);background:var(--paper-2);border:1px solid var(--rule);padding:.15em .38em;color:var(--ink);white-space:nowrap}
+
+/* engineering points */
+.points{list-style:none;margin-top:8px;border-top:1px solid var(--rule)}
+.points>li{position:relative;padding:24px 0 14px 56px;border-bottom:1px solid var(--rule)}
+.pn{position:absolute;left:0;top:28px;font:500 12.5px/1 var(--mono);color:var(--accent)}
+.points h3{font:600 21px/1.25 var(--grot);letter-spacing:-.02em;margin-bottom:10px;color:var(--ink);text-wrap:balance}
+.points p{margin-bottom:.8em;font-size:18px}
+.points ul{border-top:0!important}
+.points ul>li{font-size:18px;padding:7px 0 7px 26px!important;border-bottom:0!important}
+
 /* diagram */
-.diagram{margin:28px 0 8px;background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:24px 16px 14px;overflow-x:auto}
+.diagram{margin:24px 0 8px}
+.diagram-canvas{border:1px solid var(--rule);background:var(--paper-2);padding:clamp(16px,3vw,36px);overflow-x:auto;background-image:radial-gradient(var(--rule) .7px,transparent .7px);background-size:16px 16px}
+.diagram pre.mermaid{display:flex;justify-content:center;font:400 12px var(--mono);color:transparent;min-height:160px}
+.diagram pre.mermaid[data-processed]{color:inherit;min-height:0}
 .diagram svg{max-width:100%!important;height:auto}
-.diagram pre.mermaid{font-family:var(--sans);display:flex;justify-content:center;min-height:120px;color:transparent}
-.diagram pre.mermaid[data-processed]{color:inherit}
-.diagram figcaption{font-size:12.5px;color:var(--ink-3);text-align:center;margin-top:10px}
-/* chips */
-.chips{list-style:none;padding:0!important;display:flex;flex-wrap:wrap;gap:8px}
-.chips li{margin:0!important;padding:6px 12px!important;font-size:14px;border-radius:999px;background:var(--chip);border:1px solid var(--rule);color:var(--ink)}
-/* more */
-.more{border-top:1px solid var(--rule);padding:56px 0 24px}
-.more h2{font:400 32px/1.2 var(--serif);margin-bottom:22px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
-.tile{display:block;padding:20px;border:1px solid var(--rule);border-radius:14px;background:var(--surface);text-decoration:none;color:var(--ink);transition:border-color .15s,transform .15s}
-.tile:hover{border-color:var(--ink-3);transform:translateY(-2px)}
-.tile b{display:block;font-weight:600;margin-bottom:6px}
-.tile span{display:block;font-size:14px;line-height:1.5;color:var(--ink-2)}
-.tile i{display:inline-block;font-style:normal;font-size:12px;margin-top:12px;color:var(--ink-3)}
-footer{padding:28px 0 48px;font-size:14px;color:var(--ink-3);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
-footer a{color:var(--ink-2)}
-.theme{background:none;border:1px solid var(--rule);color:var(--ink-2);border-radius:999px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer}
-.theme:hover{color:var(--ink);border-color:var(--ink-3)}
-/* motion */
-@media (prefers-reduced-motion:no-preference){
-  .hero>*{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
-  .hero>*:nth-child(2){animation-delay:.06s}.hero>*:nth-child(3){animation-delay:.12s}.hero>*:nth-child(4){animation-delay:.18s}.hero>*:nth-child(5){animation-delay:.24s}
-  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.diagram .node rect,.diagram .node polygon,.diagram .node circle,.diagram .node path{stroke-width:1px!important}
+.diagram .node rect{rx:0;ry:0}
+.diagram .cluster rect{stroke-dasharray:3 3;rx:0;ry:0}
+.diagram .flowchart-link{stroke-width:1px!important}
+.diagram .edgeLabel,.diagram .edgeLabel p{font-family:var(--mono)!important;font-size:11px!important;color:var(--ink-3)!important}
+
+/* stack */
+.stack{list-style:none;columns:3 180px;column-gap:24px;border-top:1px solid var(--rule)}
+.stack li{break-inside:avoid;font:400 15px/1.35 var(--grot);padding:9px 0;border-bottom:1px solid var(--rule-2);color:var(--ink-2)}
+
+/* coda */
+.coda .sec-b>p:first-child{font-size:clamp(23px,2.4vw,28px);line-height:1.4;letter-spacing:-.01em;text-wrap:pretty}
+
+/* index */
+.index{padding:28px 0 0;border-top:1px solid var(--ink);margin-top:clamp(24px,4vw,48px)}
+.index-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.index-h h2{font:600 22px/1.15 var(--grot);letter-spacing:-.02em}
+.index-h p{font:400 12.5px/1 var(--mono);color:var(--ink-3)}
+.rows{list-style:none;border-top:1px solid var(--rule)}
+.rows a,.rows .here{display:grid;grid-template-columns:56px minmax(0,2.2fr) minmax(0,4fr) minmax(0,1.6fr) 24px;gap:24px;align-items:baseline;padding:20px 0;border-bottom:1px solid var(--rule);text-decoration:none}
+.rows .n{font:500 12.5px/1 var(--mono);color:var(--ink-3)}
+.rows .t{font:600 clamp(22px,2.4vw,30px)/1.1 var(--grot);letter-spacing:-.03em}
+.rows .d{font-size:17px;line-height:1.45;color:var(--ink-2)}
+.rows .k{font:400 12.5px/1.4 var(--mono);color:var(--ink-3)}
+.rows .ar{width:12px;height:12px;justify-self:end;color:var(--ink-3)}
+.rows a:hover .t{color:var(--accent)}
+.rows a:hover .ar{color:var(--accent);transform:translate(2px,-2px)}
+@media (prefers-reduced-motion:no-preference){.rows .ar{transition:transform .2s}.rows .t{transition:color .2s}}
+.rows .here{opacity:.55}
+.rows .here .k::after{content:" · You are here"}
+
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 32px;padding:36px 0 56px;font:400 14px/1.5 var(--grot);color:var(--ink-3)}
+.foot nav{display:flex;gap:22px}
+.foot a{color:var(--ink-2);text-decoration:none}
+.foot a:hover{color:var(--ink)}
+
+/* responsive */
+@media (max-width:1040px){
+  .lede{grid-column:1/-1}
+  .sheet{grid-column:1/-1;margin-top:40px;display:grid;grid-template-columns:1fr 1fr;column-gap:24px;border-top:1px solid var(--ink)}
+  .sec-h{grid-column:1/-1;position:static;display:flex;gap:16px;align-items:baseline;margin-bottom:22px}
+  .sec-h h2{max-width:none}
+  .sec-n{margin:0}
+  .sec-b{grid-column:1/-1}
+  .rows a,.rows .here{grid-template-columns:40px minmax(0,1fr) 20px;row-gap:6px}
+  .rows .d,.rows .k{grid-column:2/3}
+  .rows .ar{grid-column:3;grid-row:1}
 }
-@media (max-width:960px){
-  .layout{grid-template-columns:1fr;gap:0;padding-top:48px}
-  .toc{display:none}
+@media (max-width:640px){
+  body{font-size:18px}
+  .grid,.sec{column-gap:16px}
+  .mast nav .opt{display:none}
+  .sheet{grid-template-columns:1fr}
+  .sheet div{grid-template-columns:84px 1fr}
+  .figs{grid-template-columns:1fr 1fr}
+  .figs div:nth-child(3){padding-left:0;border-left:0}
+  .figs div:nth-child(n+3){border-top:1px solid var(--rule)}
+  .sec-b>p:first-child{font-size:19px}
+  .points>li{padding-left:0}
+  .pn{position:static;display:block;margin-bottom:10px}
+  .stack{columns:2}
+  figcaption{flex-direction:column;gap:2px}
 }
-@media (max-width:620px){
-  body{font-size:16px}
-  .wrap{padding:0 16px}
-  .bar nav a.hide-sm{display:none}
-  .hero{padding:32px 0 28px}
-  .glance{grid-template-columns:1fr}
-  .sec .card{padding:20px 18px 6px 18px}
-  .card .num{position:static;display:block;margin-bottom:6px}
-  .sec{margin-bottom:56px}
-}
-@media print{.bar,.toc,.more,.theme,.actions{display:none}.layout{display:block;border:0}body{background:#fff}}
+@media print{.mast nav,.index,.foot nav{display:none}.sec-h{position:static}body{background:#fff}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="bar">
-    <a class="me" href="https://github.com/7pixel-cl">Marco Alvarado</a>
-    <nav>
-      <a class="hide-sm" href="https://7pixel.cl">Portfolio</a>
+<div class="page">
+  <header class="mast">
+    <a class="who" href="https://github.com/7pixel-cl">Marco Alvarado <span>/ Case studies</span></a>
+    <nav aria-label="Site">
+      <a href="#index">Index</a>
+      <a class="opt" href="https://7pixel.cl">Portfolio</a>
       <a href="https://www.linkedin.com/in/marcoalvaradot/">LinkedIn</a>
-      <button class="theme" type="button" aria-label="Toggle color theme" title="Toggle theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <button class="mode" type="button" aria-label="Switch color theme">Dark</button>
     </nav>
   </header>
 
-  <section class="hero">
-    <span class="kicker">Product case study</span>
-    <h1>APR — Billing platform for rural water utilities</h1>
-    <p class="summary">A multi-tenant SaaS that runs the monthly billing cycle for Chile's rural drinking-water committees — from offline meter readings in the field to legally compliant bills.</p>
-    <div class="actions">
+  <main>
+  <div class="tb grid">
+    <p class="tb-meta"><span><b>Case study 04</b> / 05</span><span>GovTech · Utilities</span><span>2026</span><span>Product owner &amp; sole engineer</span></p>
+    <h1 class="name">APR</h1>
+    <div class="lede">
+      <p class="thesis">Billing platform for rural water utilities</p>
+      <p class="summary">A multi-tenant SaaS that runs the monthly billing cycle for Chile's rural drinking-water committees — from offline meter readings in the field to legally compliant bills.</p>
+      <p class="go"><a href="https://github.com/7pixel-cl/apr-showcase">Repository on GitHub<svg class="ar" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 9 9 3M4 3h5v5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></a></p>
       
-      <a class="btn primary" href="https://github.com/7pixel-cl/apr-showcase">View on GitHub</a>
     </div>
+    <dl class="sheet"><div><dt>Role</dt><dd>Product owner &amp; sole engineer — domain research, architecture, implementation, deployment</dd></div><div><dt>Users</dt><dd>Treasurers, committee presidents, meter readers, and auditors of rural water operators (≤ 300 connections)</dd></div><div><dt>Status</dt><dd>Billing core (phases 0–1) complete and deployed behind a gated CI/CD pipeline. Electronic invoicing (SII) and online payments are the next phases</dd></div></dl>
+    <div class="figs"><div><strong>20k</strong><span>lines of TypeScript</span></div><div><strong>23</strong><span>database tables</span></div><div><strong>240</strong><span>automated test cases</span></div><div><strong>5</strong><span>CI jobs gate every deploy</span></div></div>
     
-  </section>
+  </div>
 
-  
-
-  <div class="layout">
-    <nav class="toc" aria-label="On this page"><p>On this page</p><a href="#at-a-glance">At a glance</a><a href="#the-problem">The problem</a><a href="#what-i-built">What I built</a><a href="#how-the-monthly-cycle-works">How the monthly cycle works</a><a href="#engineering-highlights">Engineering highlights</a><a href="#stack">Stack</a><a href="#what-i-learned">What I learned</a></nav>
-    <article>
-<section id="at-a-glance" class="sec"><h2>At a glance</h2><dl class="glance"><div><dt>Role</dt><dd>Product owner &amp; sole engineer — domain research, architecture, implementation, deployment</dd></div><div><dt>Users</dt><dd>Treasurers, committee presidents, meter readers, and auditors of rural water operators (≤ 300 connections)</dd></div><div><dt>Status</dt><dd>Billing core (phases 0–1) complete and deployed behind a gated CI/CD pipeline. Electronic invoicing (SII) and online payments are the next phases</dd></div><div><dt>Scale of the codebase</dt><dd>~20k lines of TypeScript · 23 tables · ~240 automated tests (unit, real-Postgres RLS, offline E2E)</dd></div></dl></section>
-<section id="the-problem" class="sec"><h2>The problem</h2><p>Chile has roughly 2,400 rural drinking-water operators (APR/SSR), serving ~2.4 million people and run largely by volunteer committees. Under Law 20.998 they must bill each household monthly using tiered tariffs, subsidies, late interest, and specific notices — often with paper notebooks, spreadsheets, and meter readers walking routes with <strong>no mobile signal</strong>.</p>
+  <div class="body">
+<section id="the-problem" class="sec "><header class="sec-h"><span class="sec-n">01</span><h2>The problem</h2></header><div class="sec-b"><p>Chile has roughly 2,400 rural drinking-water operators (APR/SSR), serving ~2.4 million people and run largely by volunteer committees. Under Law 20.998 they must bill each household monthly using tiered tariffs, subsidies, late interest, and specific notices — often with paper notebooks, spreadsheets, and meter readers walking routes with <strong>no mobile signal</strong>.</p>
 <p>Off-the-shelf billing software assumes reliable connectivity, an accountant on staff, and a single company. These operators need the opposite: something a volunteer treasurer can run, that works offline in the field, and that gets the legal rules right every time.</p>
-</section>
-<section id="what-i-built" class="sec"><h2>What I built</h2><ul>
+</div></section>
+<section id="what-i-built" class="sec "><header class="sec-h"><span class="sec-n">02</span><h2>What I built</h2></header><div class="sec-b"><ul>
 <li><strong>Customer register import</strong> — a CSV wizard that validates and imports the existing household list, with per-row error reporting.</li>
 <li><strong>Versioned tariffs</strong> — consumption tiers (marginal or total, configurable per operator), fixed charges, subsidies, and interest, versioned so past bills are always reproducible.</li>
 <li><strong>Offline field app (PWA)</strong> — meter readers install the app, download their route, and capture readings and meter photos with no connectivity; everything syncs when signal returns.</li>
@@ -168,8 +233,8 @@ footer a{color:var(--ink-2)}
 <li><strong>Anomaly detection</strong> — implausible consumption is flagged, and a background job runs OCR on meter photos to flag mismatches against the typed reading.</li>
 <li><strong>Team &amp; roles</strong> — six committee roles with invitations, passkeys, and email-code login.</li>
 </ul>
-</section>
-<section id="how-the-monthly-cycle-works" class="sec"><h2>How the monthly cycle works</h2><figure class="diagram"><pre class="mermaid">flowchart TD
+</div></section>
+<section id="how-the-monthly-cycle-works" class="sec "><header class="sec-h"><span class="sec-n">03</span><h2>How the monthly cycle works</h2></header><div class="sec-b"><figure class="diagram"><div class="diagram-canvas"><pre class="mermaid">flowchart TD
   A[&quot;Tariff version&lt;br/&gt;tiers · subsidy · interest&quot;] --&gt; C
   subgraph Field[&quot;Field (offline PWA)&quot;]
     R[&quot;Reading route&quot;] --&gt; Q[&quot;IndexedDB queue&lt;br/&gt;readings + photos&quot;]
@@ -180,71 +245,77 @@ footer a{color:var(--ink-2)}
   P --&gt; B[&quot;Bills + PDF&lt;br/&gt;immutable once issued&quot;]
   Q -. &quot;photo&quot; .-&gt; O[&quot;Background job&lt;br/&gt;OCR check → flag only&quot;]
   B -.-&gt; N1[&quot;Next: SII e-invoice&quot;]
-  B -.-&gt; N2[&quot;Next: online payments&quot;]</pre><figcaption>Diagram: simplified for a public audience.</figcaption></figure>
-</section>
-<section id="engineering-highlights" class="sec"><h2>Engineering highlights</h2><ol class="cards"><li class="card"><span class="num">01</span><h3>Fail-closed multi-tenancy with Postgres row-level security</h3><p>Every operator&#39;s data lives in the same database, isolated by <strong>forced RLS</strong>. A helper opens each transaction with the tenant set at the database level, and repositories only accept a <em>branded</em> <code>TenantTx</code> type — so code that forgets the tenant <strong>doesn&#39;t compile</strong>, and a query that slips through returns nothing rather than another committee&#39;s data. Cross-tenant tests run against a real Postgres in CI.</p>
-</li><li class="card"><span class="num">02</span><h3>A pure, law-traceable domain engine</h3><p>Consumption, tariff, subsidy, interest, and collections rules live in a package with <strong>no I/O</strong>, covered by table-driven tests. Each rule references the legal source it implements, which makes audits and regulator questions answerable from the code.</p>
-</li><li class="card"><span class="num">03</span><h3>Offline-first sync that never loses a reading</h3><p>Field captures go into an IndexedDB queue and sync in batches. A capture only changes state when the server acknowledges that specific customer, and the server classifies each one as <em>accepted</em>, <em>needs review</em>, or <em>conflict</em> — so flaky rural connectivity can&#39;t silently drop or duplicate a reading. A Playwright test exercises the offline flow against the production build.</p>
-</li><li class="card"><span class="num">04</span><h3>Immutability enforced by the database, not by convention</h3><p>Issued bills and the audit log are protected by <strong>Postgres triggers</strong> (the audit log is written by a <code>SECURITY DEFINER</code> trigger). Even a bug in the application can&#39;t rewrite financial history.</p>
-</li><li class="card"><span class="num">05</span><h3>AI assists, humans decide</h3><p>OCR on meter photos can <strong>only raise a flag</strong> — it never changes a reading. That keeps the system explainable to a committee and a regulator.</p>
-</li><li class="card"><span class="num">06</span><h3>A deploy pipeline that has to earn production</h3><p>CI runs lint/format (Biome), typecheck, schema drift checks, unit tests, RLS tests on real Postgres, and the offline E2E test. <strong>Only if all pass</strong> does it migrate the production database and trigger the deploy. Auto-deploy and direct pushes to <code>main</code> are deliberately disabled.</p>
-</li></ol></section>
-<section id="stack" class="sec"><h2>Stack</h2><ul class="chips"><li>Next.js 16</li><li>React 19</li><li>TypeScript</li><li>tRPC 11</li><li>Drizzle ORM</li><li>PostgreSQL 17 (Neon) with RLS</li><li>Better Auth (organizations, passkeys)</li><li>Inngest</li><li>Serwist + Dexie (PWA / IndexedDB)</li><li>tesseract.js</li><li>pdfkit</li><li>Vitest</li><li>Playwright</li><li>Biome</li><li>Turborepo + pnpm</li><li>Vercel</li></ul></section>
-<section id="what-i-learned" class="sec"><h2>What I learned</h2><p>Domain research was as much of the work as code: reading the law and regulator manuals first, writing the rules as pure functions, and only then building screens. For a small, non-technical customer base, <strong>correctness and recoverability</strong> (idempotent runs, immutable bills, offline queues) matter far more than feature count.</p>
-</section>
-    </article>
+  B -.-&gt; N2[&quot;Next: online payments&quot;]</pre></div><figcaption><span>Fig. 1</span>How the monthly cycle works. Simplified for a public audience.</figcaption></figure>
+</div></section>
+<section id="engineering-highlights" class="sec points"><header class="sec-h"><span class="sec-n">04</span><h2>Engineering highlights</h2></header><div class="sec-b"><ol class="points"><li><span class="pn">4.1</span><h3>Fail-closed multi-tenancy with Postgres row-level security</h3><p>Every operator&#39;s data lives in the same database, isolated by <strong>forced RLS</strong>. A helper opens each transaction with the tenant set at the database level, and repositories only accept a <em>branded</em> <code>TenantTx</code> type — so code that forgets the tenant <strong>doesn&#39;t compile</strong>, and a query that slips through returns nothing rather than another committee&#39;s data. Cross-tenant tests run against a real Postgres in CI.</p>
+</li><li><span class="pn">4.2</span><h3>A pure, law-traceable domain engine</h3><p>Consumption, tariff, subsidy, interest, and collections rules live in a package with <strong>no I/O</strong>, covered by table-driven tests. Each rule references the legal source it implements, which makes audits and regulator questions answerable from the code.</p>
+</li><li><span class="pn">4.3</span><h3>Offline-first sync that never loses a reading</h3><p>Field captures go into an IndexedDB queue and sync in batches. A capture only changes state when the server acknowledges that specific customer, and the server classifies each one as <em>accepted</em>, <em>needs review</em>, or <em>conflict</em> — so flaky rural connectivity can&#39;t silently drop or duplicate a reading. A Playwright test exercises the offline flow against the production build.</p>
+</li><li><span class="pn">4.4</span><h3>Immutability enforced by the database, not by convention</h3><p>Issued bills and the audit log are protected by <strong>Postgres triggers</strong> (the audit log is written by a <code>SECURITY DEFINER</code> trigger). Even a bug in the application can&#39;t rewrite financial history.</p>
+</li><li><span class="pn">4.5</span><h3>AI assists, humans decide</h3><p>OCR on meter photos can <strong>only raise a flag</strong> — it never changes a reading. That keeps the system explainable to a committee and a regulator.</p>
+</li><li><span class="pn">4.6</span><h3>A deploy pipeline that has to earn production</h3><p>CI runs lint/format (Biome), typecheck, schema drift checks, unit tests, RLS tests on real Postgres, and the offline E2E test. <strong>Only if all pass</strong> does it migrate the production database and trigger the deploy. Auto-deploy and direct pushes to <code>main</code> are deliberately disabled.</p>
+</li></ol></div></section>
+<section id="stack" class="sec stack"><header class="sec-h"><span class="sec-n">05</span><h2>Stack</h2></header><div class="sec-b"><ul class="stack"><li>Next.js 16</li><li>React 19</li><li>TypeScript</li><li>tRPC 11</li><li>Drizzle ORM</li><li>PostgreSQL 17 (Neon) with RLS</li><li>Better Auth (organizations, passkeys)</li><li>Inngest</li><li>Serwist + Dexie (PWA / IndexedDB)</li><li>tesseract.js</li><li>pdfkit</li><li>Vitest</li><li>Playwright</li><li>Biome</li><li>Turborepo + pnpm</li><li>Vercel</li></ul></div></section>
+<section id="what-i-learned" class="sec coda"><header class="sec-h"><span class="sec-n">06</span><h2>What I learned</h2></header><div class="sec-b"><p>Domain research was as much of the work as code: reading the law and regulator manuals first, writing the rules as pure functions, and only then building screens. For a small, non-technical customer base, <strong>correctness and recoverability</strong> (idempotent runs, immutable bills, offline queues) matter far more than feature count.</p>
+</div></section>
   </div>
+  </main>
 
-  <section class="more" aria-labelledby="more-h">
-    <h2 id="more-h">More case studies</h2>
-    <div class="grid">
-      <a class="tile" href="https://7pixel-cl.github.io/profeia-showcase/"><b>ProfeIA</b><span>Exam prep with spaced repetition and a Socratic AI tutor that won’t leak answers.</span><i>Next.js · React · TypeScript</i></a>
-      <a class="tile" href="https://7pixel-cl.github.io/vytera-showcase/"><b>Vytera</b><span>AI-powered real estate CRM with an omnichannel inbox and human-controlled AI.</span><i>Next.js · React · TypeScript</i></a>
-      <a class="tile" href="https://7pixel-cl.github.io/confidential-platform-showcase/"><b>Confidential Project</b><span>HIPAA-regulated health-tech platform for older adults (NDA, high level).</span><i>Next.js · React · TypeScript</i></a>
-      <a class="tile" href="https://7pixel-cl.github.io/docuhr-showcase/"><b>DocuHR</b><span>Labor-compliance documents with AI expiry extraction and alerts.</span><i>Next.js · TypeScript · tRPC</i></a>
-    </div>
+  <section class="index" id="index" aria-labelledby="index-h">
+    <div class="index-h"><h2 id="index-h">Index</h2><p>5 case studies</p></div>
+    <ol class="rows">
+      <li><a href="https://7pixel-cl.github.io/profeia-showcase/"><span class="n">01</span><span class="t">ProfeIA</span><span class="d">Exam prep with spaced repetition and a Socratic AI tutor that won’t leak answers.</span><span class="k">EdTech · AI</span><svg class="ar" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 9 9 3M4 3h5v5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></a></li>
+      <li><a href="https://7pixel-cl.github.io/vytera-showcase/"><span class="n">02</span><span class="t">Vytera</span><span class="d">AI-powered real estate CRM with an omnichannel inbox and human-controlled AI.</span><span class="k">PropTech · AI</span><svg class="ar" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 9 9 3M4 3h5v5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></a></li>
+      <li><a href="https://7pixel-cl.github.io/confidential-platform-showcase/"><span class="n">03</span><span class="t">Confidential Project</span><span class="d">HIPAA-regulated health-tech platform for older adults (NDA, high level).</span><span class="k">Health-tech · NDA</span><svg class="ar" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 9 9 3M4 3h5v5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></a></li>
+      <li><div class="here" aria-current="page"><span class="n">04</span><span class="t">APR</span><span class="d">Offline-first billing SaaS for Chile’s rural water utilities.</span><span class="k">GovTech · Utilities</span><svg class="ar" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 9 9 3M4 3h5v5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></div></li>
+      <li><a href="https://7pixel-cl.github.io/docuhr-showcase/"><span class="n">05</span><span class="t">DocuHR</span><span class="d">Labor-compliance documents with AI expiry extraction and alerts.</span><span class="k">HR · Compliance · AI</span><svg class="ar" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 9 9 3M4 3h5v5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></a></li>
+    </ol>
   </section>
 
-  <footer>
-    <span>© 2026 Marco Alvarado. Production source is private; this page shares no proprietary code or data.</span>
-    <span><a href="https://github.com/7pixel-cl">GitHub</a> · <a href="https://7pixel.cl">7pixel.cl</a> · <a href="https://www.upwork.com/freelancers/~01dadbf4c232f73f55">Upwork</a></span>
+  <footer class="foot">
+    <p>© 2026 Marco Alvarado. Production source is private; nothing proprietary is published here.</p>
+    <nav aria-label="Elsewhere"><a href="https://github.com/7pixel-cl">GitHub</a><a href="https://www.linkedin.com/in/marcoalvaradot/">LinkedIn</a><a href="https://7pixel.cl">7pixel.cl</a><a href="https://www.upwork.com/freelancers/~01dadbf4c232f73f55">Upwork</a></nav>
   </footer>
 </div>
 
 <script>
 (() => {
-  const root = document.documentElement;
+  const root = document.documentElement, btn = document.querySelector('.mode');
   try { const t = localStorage.getItem('theme'); if (t) root.dataset.theme = t; } catch (e) {}
-  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-  document.querySelector('.theme').addEventListener('click', () => {
-    root.dataset.theme = isDark() ? 'light' : 'dark';
+  const dark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  const label = () => { btn.textContent = dark() ? 'Light' : 'Dark'; };
+  label();
+  btn.addEventListener('click', () => {
+    root.dataset.theme = dark() ? 'light' : 'dark';
     try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
-    window.__renderDiagrams && window.__renderDiagrams();
+    label(); window.__diagrams && window.__diagrams();
   });
-  window.__isDark = isDark;
-  const links = [...document.querySelectorAll('.toc a')];
-  const io = new IntersectionObserver((es) => es.forEach((e) => {
-    if (e.isIntersecting) links.forEach((a) => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id));
-  }), { rootMargin: '-20% 0px -70% 0px' });
-  document.querySelectorAll('.sec').forEach((s) => io.observe(s));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { label(); window.__diagrams && window.__diagrams(); });
+  window.__dark = dark;
 })();
 </script>
 <script type="module">
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
-const sources = [...document.querySelectorAll('pre.mermaid')].map((el) => el.textContent);
-window.__renderDiagrams = async () => {
-  const cs = getComputedStyle(document.documentElement);
-  const v = (n) => cs.getPropertyValue(n).trim();
-  mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'base', fontFamily: 'Instrument Sans, system-ui, sans-serif',
-    flowchart: { curve: 'basis', padding: 14, htmlLabels: true },
-    themeVariables: { darkMode: window.__isDark(), background: v('--surface'), primaryColor: v('--bg'), primaryTextColor: v('--ink'),
-      primaryBorderColor: v('--accent-ink'), lineColor: v('--ink-3'), secondaryColor: v('--chip'), tertiaryColor: v('--chip'),
-      clusterBkg: v('--accent-soft'), clusterBorder: v('--rule'), edgeLabelBackground: v('--surface'), fontSize: '14px' } });
-  const els = document.querySelectorAll('pre.mermaid');
-  els.forEach((el, i) => { el.removeAttribute('data-processed'); el.textContent = sources[i]; });
+const els = [...document.querySelectorAll('pre.mermaid')];
+const src = els.map((el) => el.textContent);
+window.__diagrams = async () => {
+  if (!els.length) return;
+  const cs = getComputedStyle(document.documentElement), v = (n) => cs.getPropertyValue(n).trim();
+  mermaid.initialize({
+    startOnLoad: false, securityLevel: 'strict', theme: 'base',
+    fontFamily: 'IBM Plex Mono, ui-monospace, monospace',
+    flowchart: { curve: 'linear', padding: 16, nodeSpacing: 28, rankSpacing: 40, htmlLabels: true },
+    themeVariables: {
+      darkMode: window.__dark(), fontSize: '12px', background: 'transparent',
+      primaryColor: v('--paper'), primaryTextColor: v('--ink'), primaryBorderColor: v('--ink'),
+      secondaryColor: v('--paper'), tertiaryColor: v('--paper'), mainBkg: v('--paper'), nodeBorder: v('--ink'),
+      lineColor: v('--ink-3'), clusterBkg: 'transparent', clusterBorder: v('--ink-3'), titleColor: v('--ink-3'),
+      edgeLabelBackground: v('--paper-2'), textColor: v('--ink')
+    }
+  });
+  els.forEach((el, i) => { el.removeAttribute('data-processed'); el.textContent = src[i]; });
   await mermaid.run({ nodes: els });
 };
-window.__renderDiagrams();
+window.__diagrams();
 </script>
 </body>
 </html>
