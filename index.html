@@ -158,6 +158,7 @@ code{font:400 .8em/1 var(--mono);background:var(--paper-2);border:1px solid var(
 .rows a:hover .ar{color:var(--accent);transform:translate(2px,-2px)}
 @media (prefers-reduced-motion:no-preference){.rows .ar{transition:transform .2s}.rows .t{transition:color .2s}}
 .rows .here{opacity:.55}
+.rows .here .ar{visibility:hidden}
 .rows .here .k::after{content:" · You are here"}
 
 .foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 32px;padding:36px 0 56px;font:400 14px/1.5 var(--grot);color:var(--ink-3)}
@@ -180,7 +181,7 @@ code{font:400 .8em/1 var(--mono);background:var(--paper-2);border:1px solid var(
 @media (max-width:640px){
   body{font-size:18px}
   .grid,.sec{column-gap:16px}
-  .mast nav .opt{display:none}
+  .mast nav .opt,.mast .who span{display:none}
   .sheet{grid-template-columns:1fr}
   .sheet div{grid-template-columns:84px 1fr}
   .figs{grid-template-columns:1fr 1fr}
